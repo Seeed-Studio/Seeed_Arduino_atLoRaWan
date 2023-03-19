@@ -243,8 +243,8 @@ bool LoRaWanClass::transferPacket(char *buffer, unsigned char timeout)
     for(unsigned char i = 0; i < length; i ++)SerialLoRa.write(buffer[i]);
     sendCommand("\"\r\n");
     
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
 #if _DEBUG_SERIAL_    
     SerialUSB.print(_buffer);
 #endif    
@@ -254,7 +254,7 @@ bool LoRaWanClass::transferPacket(char *buffer, unsigned char timeout)
 
 bool LoRaWanClass::transferPacket(unsigned char *buffer, unsigned char length, unsigned char timeout)
 {
-    char temp[2] = {0};
+  char temp[3] = {0};
     
     while(SerialLoRa.available())SerialLoRa.read();
     
@@ -266,8 +266,8 @@ bool LoRaWanClass::transferPacket(unsigned char *buffer, unsigned char length, u
     }
     sendCommand("\"\r\n");
     
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
 #if _DEBUG_SERIAL_    
     SerialUSB.print(_buffer);
 #endif    
@@ -285,8 +285,8 @@ bool LoRaWanClass::transferPacketWithConfirmed(char *buffer, unsigned char timeo
     for(unsigned char i = 0; i < length; i ++)SerialLoRa.write(buffer[i]);
     sendCommand("\"\r\n");
     
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
 #if _DEBUG_SERIAL_    
     SerialUSB.print(_buffer);
 #endif      
@@ -296,7 +296,7 @@ bool LoRaWanClass::transferPacketWithConfirmed(char *buffer, unsigned char timeo
 
 bool LoRaWanClass::transferPacketWithConfirmed(unsigned char *buffer, unsigned char length, unsigned char timeout)
 {
-    char temp[2] = {0};
+  char temp[3] = {0};
     
     while(SerialLoRa.available())SerialLoRa.read();
     
@@ -310,8 +310,8 @@ bool LoRaWanClass::transferPacketWithConfirmed(unsigned char *buffer, unsigned c
 #if _DEBUG_SERIAL_    
     SerialUSB.print(_buffer);
 #endif      
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
     
     if(strstr(_buffer, "+CMSGHEX: ACK Received"))return true;
     return false;
@@ -323,7 +323,7 @@ short LoRaWanClass::receivePacket(char *buffer, short length, short *rssi)
     short number = 0;
     
     ptr = strstr(_buffer, "RSSI ");
-    if(ptr)*rssi = atoi(ptr + 5);
+  if(ptr)*rssi = (short) strtol(ptr + 5, nullptr, 10);
     else *rssi = -255;
     
     ptr = strstr(_buffer, "RX: \"");
@@ -331,19 +331,20 @@ short LoRaWanClass::receivePacket(char *buffer, short length, short *rssi)
     {        
         ptr += 5;
         
-        uint8_t bitStep = 0;
+      uint8_t bitStep;
         if(*(ptr + 2) == ' ')bitStep = 3; // Firmware version 2.0.10
         else bitStep = 2;                   // Firmware version 2.1.15
         
         for(short i = 0; ; i ++)
         {
             char temp[2] = {0};
-            unsigned char tmp, result = 0;
+          unsigned char tmp = 0;
+          unsigned char result = 0;
             
             temp[0] = *(ptr + i * bitStep);
             temp[1] = *(ptr + i * bitStep + 1);
            
-            for(unsigned char j = 0; j < 2; j ++)
+          for(unsigned char j : temp)
             {
                 if((temp[j] >= '0') && (temp[j] <= '9'))
                 tmp = temp[j] - '0';
@@ -359,13 +360,13 @@ short LoRaWanClass::receivePacket(char *buffer, short length, short *rssi)
 
             if(*(ptr + (i + 1) * bitStep) == '\"' && *(ptr + (i + 1) * bitStep + 1) == '\r' && *(ptr + (i + 1) * bitStep + 2) == '\n')
             {
-                number = i + 1;
+              number = ++i;
                 break;
             }
         }        
     }
        
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
     
     return number;
 }
@@ -380,8 +381,8 @@ bool LoRaWanClass::transferProprietaryPacket(char *buffer, unsigned char timeout
     for(unsigned char i = 0; i < length; i ++)SerialLoRa.write(buffer[i]);
     sendCommand("\"\r\n");
     
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
 #if _DEBUG_SERIAL_    
     SerialUSB.print(_buffer);
 #endif    
@@ -391,7 +392,7 @@ bool LoRaWanClass::transferProprietaryPacket(char *buffer, unsigned char timeout
 
 bool LoRaWanClass::transferProprietaryPacket(unsigned char *buffer, unsigned char length, unsigned char timeout)
 {
-    char temp[2] = {0};
+  char temp[3] = {0};
     
     while(SerialLoRa.available())SerialLoRa.read();
     
@@ -403,8 +404,8 @@ bool LoRaWanClass::transferProprietaryPacket(unsigned char *buffer, unsigned cha
     }
     sendCommand("\"\r\n");
     
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
 #if _DEBUG_SERIAL_    
     SerialUSB.print(_buffer);
 #endif    
@@ -562,8 +563,8 @@ bool LoRaWanClass::setOTAAJoin(_otaa_join_cmd_t command, unsigned char timeout)
 #endif
     delay(DEFAULT_TIMEWAIT);
     
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
 #if _DEBUG_SERIAL_    
     SerialUSB.print(_buffer);
 #endif  
@@ -594,7 +595,7 @@ void LoRaWanClass::setDeviceReset(void)
     delay(DEFAULT_TIMEWAIT);
 }
 
-void LoRaWanClass::setDeviceDefault(void)
+void LoRaWanClass::setDeviceDefault()
 {
     sendCommand("AT+FDEFAULT=RISINGHF\r\n");
 #if _DEBUG_SERIAL_
@@ -617,7 +618,7 @@ void LoRaWanClass::initP2PMode(unsigned short frequency, _spreading_factor_t spr
     delay(DEFAULT_TIMEWAIT);
 }
 
-bool LoRaWanClass::transferPacketP2PMode(char *buffer, unsigned char timeout)
+bool LoRaWanClass::transferPacketP2PMode(const char *buffer, unsigned char timeout)
 {
     unsigned char length = strlen(buffer);
     
@@ -634,9 +635,9 @@ bool LoRaWanClass::transferPacketP2PMode(char *buffer, unsigned char timeout)
     return waitForResponse("+TEST: TX DONE", timeout);
 }
 
-bool LoRaWanClass::transferPacketP2PMode(unsigned char *buffer, unsigned char length, unsigned char timeout)
+bool LoRaWanClass::transferPacketP2PMode(const unsigned char *buffer, unsigned char length, unsigned char timeout)
 {
-    char temp[2] = {0};
+  char temp[3] = {0};
     
     sendCommand("AT+TEST=TXLRPKT,\"");
     for(unsigned char i = 0; i < length; i ++)
@@ -663,17 +664,17 @@ short LoRaWanClass::receivePacketP2PMode(unsigned char *buffer, short length, sh
     sendCommandAndWaitForResponse("AT+TEST=RXLRPKT\r\n", "+TEST: RXLRPKT", 2);
     
     while(SerialLoRa.available())SerialLoRa.read();
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
-    readBuffer(_buffer, BEFFER_LENGTH_MAX, timeout);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
+  readBuffer(_buffer, BUFFER_LENGTH_MAX, timeout);
     
     ptr = strstr(_buffer, "LEN");
-    if(ptr)number = atoi(ptr + 4);
+  if(ptr) number = (short) strtol(ptr + 4, nullptr, 10);
     else number = 0;
     
     if(number <= 0)return 0;
     
     ptr = strstr(_buffer, "RSSI:");
-    if(ptr)*rssi = atoi(ptr + 5);
+  if(ptr)*rssi = (short) strtol(ptr + 5, nullptr, 10);
     else *rssi = -255;
     
     ptr = strstr(_buffer, "RX \"");
@@ -688,12 +689,13 @@ short LoRaWanClass::receivePacketP2PMode(unsigned char *buffer, short length, sh
         for(short i = 0; i < number; i ++)
         {
             char temp[2] = {0};
-            unsigned char tmp, result = 0;
+          unsigned char tmp = 0;
+          unsigned char result = 0;
             
             temp[0] = *(ptr + i * bitStep);
             temp[1] = *(ptr + i * bitStep + 1);
            
-            for(unsigned char j = 0; j < 2; j ++)
+          for(unsigned char j : temp)
             {
                 if((temp[j] >= '0') && (temp[j] <= '9'))
                 tmp = temp[j] - '0';
@@ -709,14 +711,14 @@ short LoRaWanClass::receivePacketP2PMode(unsigned char *buffer, short length, sh
         }
     }
     
-    memset(_buffer, 0, BEFFER_LENGTH_MAX);
+  memset(_buffer, 0, BUFFER_LENGTH_MAX);
     
     return number;
 }
 
-short LoRaWanClass::getBatteryVoltage(void)
+short LoRaWanClass::getBatteryVoltage()
 {
-    int battery;
+  uint32_t battery;
     
     pinMode(CHARGE_STATUS_PIN, OUTPUT);
     digitalWrite(CHARGE_STATUS_PIN, LOW);
@@ -724,7 +726,7 @@ short LoRaWanClass::getBatteryVoltage(void)
     battery = (analogRead(BATTERY_POWER_PIN) * 3300 * 11) >> 10;
     pinMode(CHARGE_STATUS_PIN, INPUT);
     
-    return battery;
+  return (short)(battery);
 }
 
 void LoRaWanClass::loraDebug(void)
@@ -740,7 +742,7 @@ void LoRaWanClass::loraDebugPrint(unsigned char timeout)
 
     timerStart = millis();
     
-    while(1)
+  while(true)
     {
         while(SerialLoRa.available()) SerialUSB.write(SerialLoRa.read());  
         
@@ -750,7 +752,7 @@ void LoRaWanClass::loraDebugPrint(unsigned char timeout)
 }
 #endif
 
-void LoRaWanClass::sendCommand(char *command)
+void LoRaWanClass::sendCommand(const char *command)
 {
     SerialLoRa.print(command);
 }
@@ -762,7 +764,7 @@ short LoRaWanClass::readBuffer(char *buffer, short length, unsigned char timeout
 
     timerStart = millis();
 
-    while(1)
+  while(true)
     {
         if(i < length)
         {
@@ -780,21 +782,21 @@ short LoRaWanClass::readBuffer(char *buffer, short length, unsigned char timeout
     return i;
 }
 
-bool LoRaWanClass::waitForResponse(char* response, unsigned char timeout)
+bool LoRaWanClass::waitForResponse(const char *response, unsigned char timeout)
 {
-    short len = strlen(response);
+  auto len = (short)(strlen(response));
     short sum = 0;
-    unsigned long timerStart,timerEnd;
+    unsigned long timerStart, timerEnd;
     
     timerStart = millis();
 
-    while(1)
+  while(true)
     {
         if(SerialLoRa.available())
         {
             char c = SerialLoRa.read();
 
-            sum = (c == response[sum]) ? sum + 1 : 0;
+            c == response[sum] ? sum++ : sum = 0;
             if(sum == len)break;
         }
         
@@ -805,12 +807,12 @@ bool LoRaWanClass::waitForResponse(char* response, unsigned char timeout)
     return true;
 }
 
-bool LoRaWanClass::sendCommandAndWaitForResponse(char* command, char *response, unsigned char timeout)
+bool LoRaWanClass::sendCommandAndWaitForResponse(const char *command, const char *response, unsigned char timeout)
 {
     sendCommand(command);
     
     return waitForResponse(response, timeout);
 }
 
-
 LoRaWanClass lora;
+char LoRaWanClass::_buffer[BUFFER_LENGTH_MAX] = {0};

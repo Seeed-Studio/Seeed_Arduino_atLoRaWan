@@ -34,8 +34,13 @@
 
 #include <Arduino.h>
 
-
+#ifndef SerialLoRa
 #define SerialLoRa          Serial1
+#endif
+
+#ifndef SerialDebug
+#define SerialDebug         SerialUSB
+#endif
 
 #define _DEBUG_SERIAL_      1
 #define DEFAULT_TIMEOUT     5 // second

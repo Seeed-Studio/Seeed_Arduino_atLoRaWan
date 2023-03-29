@@ -52,6 +52,9 @@
 
 #define BUFFER_LENGTH_MAX    256
 
+enum _packet_type_t{MSG,MSGHEX,PMSG,PMSGHEX,CMSG,CMSGHEX,TXLRSTR,TXLRPKT, _SIZE_OF_PACKET_TYPE};
+//lookup to packet type string
+const char packet_type_lookup[_SIZE_OF_PACKET_TYPE][8] = {"MSG","MSGHEX","PMSG","PMSGHEX","CMSG","CMSGHEX","TXLRSTR","TXLRPKT"};
 
 enum _class_type_t { CLASS_A = 0, CLASS_C };
 enum _physical_type_t { EU434 = 0, EU868, US915, US915HYBRID, AU915, AU915OLD, CN470, CN779, AS923, KR920, IN865 };
@@ -158,7 +161,7 @@ class LoRaWanClass
          *  
          *  \return Return null.
          */
-        static void setKey(char *NwkSKey, char *AppSKey, char *AppKey);
+  static void setKey(const char *NwkSKey,const char *AppSKey,const char *AppKey);
         
         /**
          *  \brief Set the data rate
@@ -228,15 +231,16 @@ class LoRaWanClass
          */
         static void setChannel(unsigned char channel, float frequency, _data_rate_t dataRataMin, _data_rate_t dataRataMax);
         
+  static void enableChannels(unsigned char fistChannel = 0, unsigned char lastChannel = 2);
         /**
          *  \brief Transfer the data
-         *  
+   *  \details this function sends the data inside of a AT+MSG packet
          *  \param [in] *buffer The transfer data cache
          *  \param [in] timeout The over time of transfer
          *  
          *  \return Return bool. Ture : transfer done, false : transfer failed
          */
-        static bool transferPacket(char *buffer, unsigned char timeout = DEFAULT_TIMEOUT);
+  static bool transferPacket(const char *buffer, unsigned char timeout = DEFAULT_TIMEOUT);
         /**
          *  \brief Transfer the data
          *  
@@ -246,7 +250,7 @@ class LoRaWanClass
          *  
          *  \return Return bool. Ture : transfer done, false : transfer failed
          */
-        static bool transferPacket(unsigned char *buffer, unsigned char length, unsigned char timeout = DEFAULT_TIMEOUT);
+  static bool transferPacket(const unsigned char *buffer, unsigned char length, unsigned char timeout = DEFAULT_TIMEOUT);
         /**
          *  \brief Transfer the packet data
          *  
@@ -255,7 +259,7 @@ class LoRaWanClass
          *  
          *  \return Return bool. Ture : Confirmed ACK, false : Confirmed NOT ACK
          */
-        static bool transferPacketWithConfirmed(char *buffer, unsigned char timeout = DEFAULT_TIMEOUT);
+  static bool transferPacketWithConfirmed(const char *buffer, unsigned char timeout = DEFAULT_TIMEOUT);
         /**
          *  \brief Transfer the data
          *  
@@ -265,7 +269,7 @@ class LoRaWanClass
          *  
          *  \return Return bool. Ture : Confirmed ACK, false : Confirmed NOT ACK
          */
-        static bool transferPacketWithConfirmed(unsigned char *buffer, unsigned char length, unsigned char timeout = DEFAULT_TIMEOUT);
+  static bool transferPacketWithConfirmed(const unsigned char *buffer, unsigned char length, unsigned char timeout = DEFAULT_TIMEOUT);
 
         /**
          *  \brief Receive the data
@@ -418,6 +422,13 @@ class LoRaWanClass
          */
         static void setDeviceLowPower(void);
         
+  /**
+   *  \brief Wake up device
+   *
+   *  \return Return null
+   */
+  static void wakeUp(void);
+
         /**
          *  \brief Reset device
          *  
@@ -444,9 +455,12 @@ class LoRaWanClass
          *  
          *  \return Return null
          */
-        static void initP2PMode(unsigned short frequency = 433, _spreading_factor_t spreadingFactor = SF12, _band_width_t bandwidth = BW125,
+  static void initP2PMode(unsigned short frequency, _spreading_factor_t spreadingFactor = SF12, _band_width_t bandwidth = BW125,
                          unsigned char txPreamble = 8, unsigned char rxPreamble = 8, short power = 20); 
         
+  static void initP2PMode();
+
+
         /**
          *  \brief Transfer the data
          *  
@@ -493,15 +507,17 @@ class LoRaWanClass
          */
         static short getBatteryVoltage(void);
         
+  static bool transferPacketWithType(_packet_type_t packet_type,const char *buffer, unsigned char length = 0, unsigned char timeout = DEFAULT_TIMEOUT);
+
         
     private:
         static void sendCommand(const char *command);
+  static void sendChar(const char command);
         static short readBuffer(char* buffer, short length, unsigned char timeout = DEFAULT_TIMEOUT);
         static bool waitForResponse(const char* response, unsigned char timeout = DEFAULT_TIMEOUT);
         static bool sendCommandAndWaitForResponse(const char* command, const char *response, unsigned char timeout = DEFAULT_TIMEOUT);
   	static char _buffer[BUFFER_LENGTH_MAX];
-        
-
+  static bool inLowPowerMode;
 };
 
 
